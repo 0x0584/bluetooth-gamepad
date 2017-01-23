@@ -7,8 +7,10 @@
  */
 
 /* you have oast with this library.. 
- * get it done this time! */
-# include <errno.h>		/* ensure you understand this library this time.. */
+ * get it done this time! 
+ * NOTE: i didn't know what i was thinking of when i wrote `oast`
+ */
+# include <errno.h>  /* ensure you understand this library this time.. */
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
@@ -23,13 +25,14 @@
 # define MAX_RESPONSES 255	/* pow(2, 8) */
 # define NAME_MAX_SIZE 255
 # define ADDRESS_MAX_SIZE 20
+
 struct remote{
   int device_id, socket;
   char name[NAME_MAX_SIZE],
     addr[ADDRESS_MAX_SIZE];
 };
 
-struct remote init_remote(void);
+struct remote *init_remote(void);
 int
 main(int argc, char **argv)
 {
@@ -41,7 +44,7 @@ main(int argc, char **argv)
   return EXIT_SUCCESS;
 }
 
-struct remote
+struct remote *
 init_remote(void)
 {
   int i;
@@ -51,7 +54,7 @@ init_remote(void)
    * had issues while initializing.. 
    */
   if((proto->device_id = hci_get_route(NULL)) < 0 ||
-     (proto->socket = hci_open_dev(DeviceId)) < 0)
+     (proto->socket = hci_open_dev(proto->device_id)) < 0)
     exit(1);
 
   inquiry_info *info = (inquiry_info *) malloc(MAX_RESPONSES * sizeof(inquiry_info));
@@ -59,13 +62,13 @@ init_remote(void)
   /* read documentaion.. */
   int responses = hci_inquiry(proto->device_id,
 			      8,
-			      MAZ_RESPONSES,
+			      MAX_RESPONSES,
 			      NULL,
 			      &info,
 			      IREQ_CACHE_FLUSH);
 
   for(i = 0; i < responses; ++i) {
-    memset(proto->name, o, sizeof(proto->name));
+    memset(proto->name, 0, sizeof(proto->name));
     
     /* Umm, really? WHAT'S ba in ba2tr? */
     ba2str(&(info)->bdaddr, proto->addr);
