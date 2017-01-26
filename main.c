@@ -117,7 +117,7 @@ init_remote(struct remote **r, int *resps)
     /* in case the device has no name, set name to UNKNOWN */
     if(hci_read_remote_name(h->socket,
 			    &(info + i)->bdaddr,
-			    sizeof(r[i]->name), r[i]->name, 0))
+			    sizeof(r[i]->name), r[i]->name, 0) < 0)
       strcpy(r[i]->name, "UNKNOWN");
     ++i;
   }
