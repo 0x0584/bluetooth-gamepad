@@ -3,25 +3,50 @@
 
 CC = gcc
 RM = rm -f
+DRM = rm -fr
 EXEC = blue
+
+SRCDIR = src
+OBJDIR = bin
+DEPSDIR = include
+
+
+SRC := $(shell find $(SRCDIR) -name '*.c')
+OBJ := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
+DEPS:= $(shell find $(DEPSDIR) -name '*.h')
 
 CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded 
 LDFLAGS = -I. -lbluetooth
 
-DEPS =
-OBJS = main.o
+# DEPS = remote.h host.h lib.h
+# OBJS = main.o remote.o host.o
 
 ARGS = test
 
 all: main
-	@echo "finish."
+	@echo -e "\nfinish."
 
-main: $(OBJS)
-	$(CC) $(CFLAGS) -o $(EXEC) $(OBJS) $(LDFLAGS)
+main: build-dir $(OBJ)
+	@echo -e "\nbuilding application core.."
+	$(CC) $(CFLAGS) -o $(EXEC) $(OBJ) $(LDFLAGS)
 
-%.o: %.c $(DEPS)
+build-dir:
+	@$(call make-dir)
+
+define make-dir
+	for dir in $(OBJDIR); \
+	do \
+	mkdir -p $$dir; \
+	done
+endef
+
+object: $(OBJ)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $< $(LDFLAGS)
 
+remake: clean all
 clean:
-	@echo "cleaning up.."
+	@echo -e "\ncleaning up.."
 	$(RM) $(OBJ) $(EXEC)
+	$(DRM) $(OBJDIR)
+	@echo ""
