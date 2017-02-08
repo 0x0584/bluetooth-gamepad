@@ -1,5 +1,6 @@
 ## blue Makefile
 ## Anas Rchid. fall 2017
+## Modified: 02/08/2017 - 00:31:56
 
 CC = gcc
 RM = rm -f
@@ -16,7 +17,7 @@ OBJ := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 DEPS:= $(shell find $(DEPSDIR) -name '*.h')
 
 CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded 
-LDFLAGS = -I. -lbluetooth
+LDFLAGS = -I. -lbluetooth -lm
 
 # DEPS = remote.h host.h lib.h
 # OBJS = main.o remote.o host.o
