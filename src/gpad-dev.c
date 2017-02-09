@@ -1,84 +1,123 @@
-# include <math.h>
-# include <string.h>
-# include <stdio.h>
-# include "../include/libgpad.h"
+/*
+ *  Copyright (C) 2017 Anas Rchid
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Should you need to contact me, the author, you can do so either by
+ * e-mail - mail your message to <rchid.anas@gmail.com>.
+ */
+
+#include <math.h>
+#include <string.h>		/* memeset,  */
+#include <stdio.h>		/* snprintf, */
+#include "../include/libgpad.h"
 
 void
 ginit(void)
 {
-  memset(GPAD_STATE, 0, sizeof(GPAD_STATE));
+  /* initialize the gamepads state with */
+  memset(GDEV, (unsigned char) 0x00, (GPAD_COUNT * sizeof(GPAD)));
 
-# if !defined WIN32
-# define N_DEVICES 128  
-  int i;			/* the counter */
+#if defined WIN32
+  /* the xinput library take care of this */
+#else
+  int i;			/* our counter */
 
-  /* loop throw the gamepads */
+  /* loop throw all the gamepads and set their connection-flag */
   for(i = 0; i < GPAD_COUNT; ++i) {
-    char buffer[N_DEVICES];    
+    char buffer[128];
 
-    /* getting the path of the `device file` */
-    snprintf(buffer, N_DEVICES, "/dev/input/js%d", i);
+    /* getting the path of the gamepad `file descriptor` */
+    snprintf(buffer, sizeof(buffer), "/dev/input/js%d", i);
 
-    /* openining the `device file` and setting the connection flag */
-    if((GPAD_STATE[i].devfile = open(buffer, O_RDONLY | O_NONBLOCK)) != -1)
-      GPAD_STATE[i].cflag |= CONNECTION_FLAG;
+    /* opening the gamepad `file descriptor` */
+    if((GDEV[i].fd = open(buffer, O_RDONLY | O_NONBLOCK)) != -1)
+      /* the gamepad is existed; set its connection-flag */
+      GDEV[i].cflag |= CONNECTION_FLAG;
   }
-# endif
+#endif
 }
 
 void
-gkill(void)
+foo(void)
 {
-# if !defined WIN32
+#if defined WIN32
+  /* there's no device-file in windows..*/
+#else
   int i;
 
-  /* closing the which are not connected */
+  /* closing the existed gamepads connected */
   for(i = 0; i < GPAD_COUNT; ++i)
-    if(GPAD_STATE[i].devfile != -1)
-      close(GPAD_STATE[i].devfile);
-# endif
+    if(GDEV[i].fd != -1)
+      /* kill the active gamepad file descriptor */
+      close(GDEV[i].fd);
+#endif
 }
+
 
 void
 gupdate(void)
 {
   int i;
-  
+
   for(i = 0; i < GPAD_COUNT; ++i) {
-# if defined WIN32
+#if defined WIN32
     XIPNUT_STATE xin_state;
 
-    /* updating the gamepad state */
+    /* updating the state of the connected gamepads */
     if(!XInputGetState(i, &xin_state)) {
-      float ttrigger;
+      float fvar;
 
-      /* setting the trigger value */
-      ttrigger[TRIG_LEFT] = = xin_state.Gamepad.bLeftTrigger / 255.f;
-      ttrigger[TRIG_LEFT] = = xin_state.Gamepad.bRightTrigger / 255.f;
-      GPAD_STATE[i].trigger = ttrigger;
+      /* setting the left-trigger value */
+      fvar = xin_state.Gamepad.bLeffvar / 255.f;
+      GDEV[i].GPAD_BUTN.trigger[TRIG_LEFT] = fvar;
+
+      /* setting the right-trigger value */
+      fvar = xin_state.Gamepad.bRighfvar / 255.f;
+      GDEV[i].GPAD_BUTN.trigger[TRIG_RIGHT] = fvar;
       
-      /* set the connection flag */
-      GPAD_STATE[i].cflag |= CONNECTION_FLAG;
+      /* set the connection-flag */
+      GDEV[i].cflag |= CONNECTION_FLAG;
 
-      /* setting the current button state */
-      GPAD_STATE[i].current_butn = xin_state.Gamepad.wButtons;
+      /* setting the current-button state */
+      GDEV[i].GPAD_BUTN.current_butn = xin_state.Gamepad.wButtons;
 
-      /* setting the axis state */
-      GPAD_STATE[i].axis[STICK_LEFT].x = xin_state.Gamepad.sThumbLX / SAT_MVAL;
-      GPAD_STATE[i].axis[STICK_LEFT].y = xin_state.Gamepad.sThumbLY / SAT_MVAL;
-      GPAD_STATE[i].axis[STICK_RIGHT].x = xin_state.Gamepad.sThumbRX / SAT_MVAL;
-      GPAD_STATE[i].axis[STICK_RIGHT].x = xin_state.Gamepad.sThumbRY / SAT_MVAL;      
+      /* setting the gamepad-axis state */
+      fvar = xin_state.Gamepad.sThumbLX / SAT_MVAL;
+      GDEV[i].GPAD_STCK[STICK_LEFT].AXIS.x = fvar;
+
+      fvar = xin_state.Gamepad.sThumbLY / SAT_MVAL;
+      GDEV[i].GPAD_STCK[STICK_LEFT].AXIS.y = fvar;
+
+      fvar = xin_state.Gamepad.sThumbRX / SAT_MVAL;
+      GDEV[i].GPAD_STCK[STICK_RIGHT].AXIS.x = fvar;
+      
+      fvar = xin_state.Gamepad.sThumbRY / SAT_MVAL;      
+      GDEV[i].GPAD_STCK[STICK_RIGHT].AXIS.y = fvar;
     }
-    else {
-      GPAD_STATE[i].cflag ^= CONNECTION_FLAG;
-    }
-# else
-    if(GPAD_STATE[i].devfile != -1) {
+    /* the gamepad is not connected */
+    else GDEV[i].cflag ^= CONNECTION_FLAG;
+#else
+    if(GDEV[i].fd != -1) {
       struct js_event jsevent;
     
-      while(read(GPAD_STATE[i].devfile, &jsevent, sizeof(jsevent) > 0)) {
+      while(read(GDEV[i].fd, &jsevent, sizeof(jsevent) > 0)) {
 	int butn;
-
+	float temp;
+	
 	switch(jsevent.type){
 	case JS_EVENT_BUTTON:
 	  switch (jsevent.number) {
@@ -107,55 +146,57 @@ gupdate(void)
 	  default: butn = 0;
 	  }
 
-	  if(jsevent.value) GPAD_STATE[i].current_butn |= butn;
-	  else GPAD_STATE[i].current_butn ^= butn;
-	  break;
+	  if(jsevent.value) GDEV[i].BEHAVIOR.BUTTON.current_butn |= butn;
+	  else GDEV[i].BEHAVIOR.BUTTON.current_butn ^= butn;
+	  break;			/* JS_EVENT_BUTTON */
 	  
 	case JS_EVENT_AXIS:
+	  temp = jsevent.value / SAT_MVAL;
+	  
 	  switch(jsevent.number) {
-	  case 0: GPAD_STATE[i].axis[STCK_LEFT].x = jsevent.value / SAT_MVAL;
-	  case 1: GPAD_STATE[i].axis[STCK_LEFT].y = jsevent.value / SAT_MVAL;
-	  case 2: GPAD_STATE[i].trigger[TRIG_LEFT] = jsevent.value / SAT_MVAL;
+	  case 0: GDEV[i].BEHAVIOR.STICK[STCK_LEFT].AXIS.x = temp;
+	  case 1: GDEV[i].BEHAVIOR.STICK[STCK_LEFT].AXIS.y = temp;
+	  case 2: GDEV[i].BEHAVIOR.BUTTON.trigger[TRIG_LEFT] = temp;
 
-	  case 3: GPAD_STATE[i].axis[STCK_LEFT].x = jsevent.value / SAT_MVAL;
-	  case 4: GPAD_STATE[i].axis[STCK_LEFT].x = jsevent.value / SAT_MVAL;
-	  case 5: GPAD_STATE[i].trigger[TRIG_LEFT] = jsevent.value / SAT_MVAL;
+	  case 3: GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.x = temp;
+	  case 4: GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.y = temp;
+	  case 5: GDEV[i].BEHAVIOR.BUTTON.trigger[TRIG_RIGHT] = temp;
 	  default: break;
 	  }
-	  break;
+	  break;			/* JS_EVENT_AXIS */
 
-	default: break;		/* !JS_EVENT_BUTTON || !JS_EVENT_AXIS */
+	default: break;			/* !JS_EVENT_BUTTON || !JS_EVENT_AXIS */
 	} 
       }
     }
-# endif
+#endif
 
     /* updating the stick angles and magnitudes */
-    if((GPAD_STATE[i].cflag & CONNECTION_FLAG) != 0) {
+    if((GDEV[i].cflag & CONNECTION_FLAG) != 0) {
       float tsqrt,		/* a temporary square-root holder  */
 	tatan;			/* a temporary arc-tangent holder */
 
-      /* left stick */
-      tsqrt = sqrtf(powf(GPAD_STATE[i].axis[STCK_LEFT].x, 2)
-		    + powf(GPAD_STATE[i].axis[STCK_LEFT].y, 2));
-      tatan = atan2f(GPAD_STATE[i].axis[STCK_LEFT].y,
-		     GPAD_STATE[i].axis[STCK_LEFT].x);
+      /* left gamepad-stick */
+      tsqrt = sqrtf(powf(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.x, 2)
+		    + powf(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.y, 2));
+      tatan = atan2f(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.y,
+		     GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.x);
 
-      GPAD_STATE[i].axis[STCK_LEFT].value = tsqrt;
-      GPAD_STATE[i].axis[STCK_LEFT].angle = tatan;
+      GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.value = tsqrt;
+      GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.angle = tatan;
 
-      /* right stick */
-      tsqrt = sqrtf(powf(GPAD_STATE[i].axis[STCK_RIGHT].x, 2)
-		    + powf(GPAD_STATE[i].axis[STCK_RIGHT].y, 2));
-      tatan = atan2f(GPAD_STATE[i].axis[STCK_RIGHT].y,
-		     GPAD_STATE[i].axis[STCK_RIGHT].x);
+      /* right gamepad-stick */
+      tsqrt = sqrtf(powf(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.x, 2)
+		    + powf(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.y, 2));
+      tatan = atan2f(GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.y,
+		     GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.x);
       
-      GPAD_STATE[i].axis[STCK_RIGHT].value = tsqrt;
-      GPAD_STATE[i].axis[STCK_RIGHT].angle = tatan;
+      GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.value = tsqrt;
+      GDEV[i].BEHAVIOR.STICK[STCK_RIGHT].AXIS.angle = tatan;
     }
   }
 }
     
-bool gisconnected(GPAD_DEV dev) {
-  return GPAD_STATE[dev].cflag & CONNECTION_FLAG;
+bool gisconnected(GPAD gamepad) {
+  return gamepad.cflag & CONNECTION_FLAG;
 }

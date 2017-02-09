@@ -20,22 +20,16 @@
  * e-mail - mail your message to <rchid.anas@gmail.com>.
  */
 
-#ifndef REMOTE_H
-#define REMOTE_H
-#define NAME_SIZE 248
-#define ADDRESS_SIZE 19
-#define MAX_RESPONSES 255	/* pow(2, 8) */
+#ifndef LIB_H
+#define LIB_H
+#include <errno.h>  /* ensure you understand this library this time.. */
+#include <stdio.h> 
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
 #include <bluetooth/bluetooth.h> /* ba2str(),  */
 #include <bluetooth/hci.h>	  /* inquiry_info */
-#include "../include/liblue.h"
-
-/* struct(s) */
-struct remote{
-  char name[NAME_SIZE],
-    addr[ADDRESS_SIZE];
-};
-
-/* prototype(s) */
-struct remote *init_remote(struct remote **remote, int *responces);
+#include <bluetooth/hci_lib.h>	  /* hci_inquiry(), hci_get_route(), hci_open_device(), IREQ_CAHE_FLUSH */
+#include <bluetooth/rfcomm.h>
 
 #endif
