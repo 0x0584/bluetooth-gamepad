@@ -23,50 +23,16 @@
 #include "../include/libgpad.h"
 
 
-bool isbutntriggered(GPAD gamepad){
-  return (gamepad.previous_butn & butn) == 0 &&
-    (gamepad.current_butn & butn) != 0; 
+bool isbutntriggered(gpad_t *dev, butn_t butn){
+  return (dev->behav->button->previous & butn.current) == 0 &&
+    (dev->behav->button->current & butn.current) != 0; 
 }
 
-float gtrigvalue(GPAD gamepad) {
-  return gamepad.trigger[trig];
+bool isbutndown(gpad_t *dev, butn_t butn) {
+  return (dev->behav->button->current & butn.current) != 0; 
 }
 
-bool isbutndown(GPAD_DEV dev, GPAD_BUTN butn) {
-  return (GPAD_STATE[dev].current_butn & butn) != 0; 
-}
-
-bool isbutnrelzd(GPAD_DEV dev, GPAD_BUTN butn) {
-  return (GPAD_STATE[dev].previous_butn & butn) != 0 &&
-  (GPAD_STATE[dev].current_butn & butn) == 0;
-}
-
-void
-gstckXY(GPAD_DEV dev, GPAD_STCK stck, float *ox, float *oy)
-{
-  *ox = GPAD_STATE[dev].axis[stck.GPAD_WSTCK].x;
-  *oy = GPAD_STATE[dev].axis[stck.GPAD_WSTCK].y;
-}
-
-float gstckvaluealue(GPAD_DEV dev, GPAD_STCK stck) {
-  return GPAD_STATE[dev].axis[stck.GPAD_WSTCK].value;
-}
-
-float gstckangle(GPAD_DEV dev, GPAD_STCK stck) {
-  return GPAD_STATE[dev].axis[stck.GPAD_WSTCK].angle;
-}
-
-bool gstckdirec(GPAD_DEV dev, GPAD_STCK stck) {
-  if (GPAD_STATE[dev].axis[stck.GPAD_WSTCK].value < GPAD_STCK_L)
-    return false;
-
-  float tangle = GPAD_STATE[dev].axis[stck.GPAD_WSTCK].angle;
-  
-  switch (stck.GPAD_STCKDIREC) {
-  case STCKDIREC_LEFT: return tangle >= PI_H && tangle < -PI_H;
-  case STCKDIREC_RIGHT: return tangle < PI_L && tangle >= -PI_L;
-  case STCKDIREC_UP: return tangle >= PI_L && tangle < PI_H;
-  case STCKDIREC_DOWN: return tangle >= -PI_H && tangle < -PI_L;
-  default: return false;
-  }
+bool isbutnrelzd(gpad_t *dev, butn_t butn) {
+  return (dev->behav->button->previous & butn.current) != 0 &&
+  (dev->behav->button->current & butn.current) == 0;
 }
