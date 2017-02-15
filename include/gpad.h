@@ -9,28 +9,25 @@ extern "C" {
 #include <unistd.h>
 #include <fcntl.h>
 #include <linux/joystick.h>
+
+  /* gamepad types */
 #include "../include/gtypes.h"
 
-  
   struct GAMEPAD_BUTTON {
     enum BUTTON_TYPE{
-      UP	= (1<<0), 
-      DOWN	= (1<<1),
-      LEFT	= (1<<2),
-      RIGHT	= (1<<3),
+      UP = 0, DOWN, 
+      LEFT, RIGHT,
       
-      BUTTON_1	= (1<<4), 
-      BUTTON_2	= (1<<5), 
-      BUTTON_3	= (1<<6), 
-      BUTTON_4	= (1<<7),
+      BUTTON_1, BUTTON_2,
+      BUTTON_3, BUTTON_4,
 
-      BUTTON_L1	= (1<<8), 
-      BUTTON_R1	= (1<<9), 
-      BUTTON_L2	= (1<<10), 
-      BUTTON_R2	= (1<<11),
+      BUTTON_L1, BUTTON_R1,
+      BUTTON_L2, BUTTON_R2,
 
-      BUTTON_SELECT = (1<<12),
-      BUTTON_START  = (1<<13),
+      BUTTON_SELECT,
+      BUTTON_START,
+
+      BUTTON_COUNT
     } previous, current;
   };
 
@@ -39,11 +36,29 @@ extern "C" {
       angle, value;
   };
 
+  struct GAMEPAD_STICK {
+    enum STICK_SIDE {
+      STCK_LEFT = 0, S_RIGHT,
+      STCK_COUNT
+    } side;
+
+    enum DIRECTION {
+      SDIREC_CENTER = 0,
+      SDIREC_LEFT,
+      SDIREC_RIGHT,
+      SDIREC_UP,
+      SDIREC_DOWN,
+      
+      SD_COUNT
+    }direc;
+  };
   struct GAMEPAD_INFO {
     unsigned short id,
       naxes, nbuttons;
     char *name, *path;
     int fd;
+
+    bool isconnected;
   };
   
   extern struct GAMEPAD {
@@ -51,11 +66,11 @@ extern "C" {
     gpad_axe *axes;
     gpad_butn *buttons;
 
-    struct js_event *jse;
+    struct js_event *e;
   } *master;
 
   gpad_t *ginit();
-  void ginfo(gpad_t *);
+  gpad_t *ginfo(gpad_t *);
   void gevent(struct js_event *jse);
   void gkill(gpad_t *);
 

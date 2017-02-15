@@ -4,7 +4,7 @@ void
 gevent(struct js_event *jse)
 {
 
-  printf("jse: %d\n", jse->type);
+  printf("jse: %u\n", jse->type);
   getchar();
   
   /* if (jse->type == 2) { */
@@ -28,10 +28,14 @@ gevent(struct js_event *jse)
   /* } */
 
   switch(jse->type){
-  case JS_EVENT_BUTTON: printf("buttons pressed");
+  case JS_EVENT_BUTTON: 
+    printf("buttons pressed");
     break;
-  case JS_EVENT_AXIS: printf("axispressed");
+
+  case JS_EVENT_AXIS: 
+    printf("axis pressed");
     break;
+
   default: puts("not an event!");
   }
 }

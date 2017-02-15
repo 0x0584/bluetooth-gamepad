@@ -17,7 +17,6 @@ main()
       printf("Error when reading from joystick\n");
       exit(1);
     } else {
-      printf("wee\n");
       if(msg.type == JS_EVENT_BUTTON) 
 	printf("button press\n");
       if(msg.type == JS_EVENT_AXIS)

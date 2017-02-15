@@ -15,7 +15,8 @@ SRC := $(shell find $(SRCDIR) -name '*.c')
 OBJ := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 DEPS:= $(shell find $(DEPSDIR) -name '*.h')
 
-CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded 
+CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded \
+	-D DEBUG 
 LDFLAGS = -I. -lbluetooth
 
 # DEPS = remote.h host.h lib.h
