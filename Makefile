@@ -45,6 +45,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $< $(LDFLAGS)
 
 remake: clean all
+run: remake
+	./$(EXEC) $(ARGS)
 clean:
 	@echo -e "\ncleaning up.."
 	$(RM) $(OBJ) $(EXEC)

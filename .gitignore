@@ -1,5 +1,6 @@
 *.org
 blue
+*.0
 # Created by https://www.gitignore.io/api/c,linux,emacs
 
 ### C ###
