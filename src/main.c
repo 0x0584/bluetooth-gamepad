@@ -29,7 +29,7 @@
 #include "../include/lib.h"
 #include "../include/remote.h"
 #include "../include/host.h"
-/* #include "../include/gpad.h" */
+#include "../include/gpad.h"
 
 int
 main(int argc, char **argv)
@@ -46,22 +46,9 @@ main(int argc, char **argv)
   /* for(i = 0; i < responces; ++i) */
   /*   printf("%s %s\n", root[i].addr, root[i].name); */
 
-  struct js_event msg;
-  char* device = "/dev/input/js0";
-	
-  int fd = open(device, O_RDONLY);
-	
-  while(1) {
-    if(read(fd, &msg, sizeof(struct js_event)) != sizeof(struct js_event)) {
-      printf("Error when reading from joystick\n");
-      exit(1);
-    }
+  gpad_t *g = ginit();
 
-    if(msg.type == JS_EVENT_BUTTON) printf("button was pressed\n");
-    else if(msg.type == JS_EVENT_AXIS) printf("axis was pressed\n");	
-
-    usleep(10000);
-  }
+  gkill(g);
 
   return EXIT_SUCCESS;
 }

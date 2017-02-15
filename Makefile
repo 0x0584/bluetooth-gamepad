@@ -4,7 +4,7 @@
 CC = gcc
 RM = rm -f
 DRM = rm -fr
-EXEC = blue
+EXEC = bgp
 
 SRCDIR = src
 OBJDIR = bin
