@@ -1,41 +1,71 @@
 #include "../include/gpad.h"
 
 void
-gevent(struct js_event *jse)
+gevent(gpad_t *dev)
 {
+  if(isnull(dev)) goto FAIL;
 
-  printf("jse: %u\n", jse->type);
-  getchar();
+#if defined DEBUG
+  printf("type:%u\tvalue:%u\tnumber:%u\ttime%u\n",
+	 dev->e->type, dev->e->value, dev->e->number, dev->e->time);
+#endif
+
+  int rd;
+  int button;
+
+  char *buttons[] = {"1", "2", "3", "4",
+		     "L1", "R1",
+		     "SELECT","START",
+		     "SP"
+		     "L2", "R2"};
   
-  /* if (jse->type == 2) { */
-  /*   if (jse->number == 0) { */
-  /*     if (jse->value < 0) { */
-  /* 	printf("LEFT\n"); */
-  /*     } else if (jse->value > 0) { */
-  /* 	printf("RIGHT\n"); */
-  /*     } */
-  /*   } else { */
-  /*     if (jse->value < 0) { */
-  /* 	printf("UP\n"); */
-  /*     } else if (jse->value > 0) { */
-  /* 	printf("DOWN\n"); */
-  /*     } */
-  /*   } */
+  while((rd = read(dev->info->fd, dev->e, sizeof(struct js_event)))) {
+    if(rd != sizeof(struct js_event)) goto HERE;
+    
+    switch(dev->e->type){
+    case JS_EVENT_BUTTON: 
 
-  /*   if (jse->type == 1 && jse->value > 0) { */
-  /*     printf("%d\n", jse->number); */
-  /*   } */
-  /* } */
+      switch (dev->e->number) {
+      case 0: button = BUTTON_1; break;
+      case 1: button = BUTTON_2; break;
+      case 2: button = BUTTON_3; break;
+      case 3: button = BUTTON_4; break;
+	  
+      case 4: button = BUTTON_L1; break;
+      case 5: button = BUTTON_R1; break;
+	  
+      case 6: button = BUTTON_SELECT; break;
+      case 7: button = BUTTON_START; break;
 
-  switch(jse->type){
-  case JS_EVENT_BUTTON: 
-    printf("buttons pressed");
-    break;
+      case 8: button = 0; break; /* sp_button  */
 
-  case JS_EVENT_AXIS: 
-    printf("axis pressed");
-    break;
+      case 9: button = BUTTON_L2; break;
+      case 10: button = BUTTON_R2; break;
+	  
+      default: button = 0; break;
+      }
 
-  default: puts("not an event!");
+      /* set or unset the button */
+      if (dev->e->value) dev->state->button->current |= button;
+      else dev->state->button->current ^= button;
+					
+      printf("buttons pressed%s\n", buttons[button]);
+      break;
+
+    case JS_EVENT_AXIS: 
+      printf("axis pressed\n");
+      break;
+
+    default:
+      printf(".");
+      break;
+    }
+
+  HERE:
+    usleep(10000);
+    continue;
   }
+
+ FAIL:
+  return;
 }

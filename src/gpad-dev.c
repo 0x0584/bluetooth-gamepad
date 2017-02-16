@@ -1,4 +1,5 @@
 #include "../include/gpad.h"
+/* #include <dirent.h> */
 
 gpad_t *
 ginit()
@@ -11,24 +12,31 @@ ginit()
 
   /* allocate memory */
   gpad_t *gtemp = (gpad_t *) malloc(sizeof(gpad_t));
+  //  memset(gtemp, 0x00, sizeof(gpad_t));
+  
   gtemp->info = (gpad_info *) malloc(sizeof(gpad_info));
 
   /* initializion */
   gtemp->info->fd = -1;
   gtemp->info->isconnected = false;
 
-  sprintf(buffer, "%s%u", path, (gtemp->info->id = i++));
+  sprintf(buffer, "%s%u", path, (gtemp->info->id = ++i));
   gtemp->info->path = strdup(buffer);
   
   if((gtemp->info->fd = open(buffer, O_RDONLY | O_NONBLOCK)) == -1)
-    return NULL;
+    goto FAIL;
   else ginfo(gtemp);
   
 #ifdef DEBUG
   pinfo(gtemp);
 #endif
-  
+
   return gtemp;
+
+ FAIL:
+
+  free(gtemp);
+  return NULL;
 }
 
 gpad_t *
@@ -47,8 +55,11 @@ ginfo(gpad_t *dev)
   dev->info->nbuttons = nbuttons;
   dev->info->name = strdup(name);
   
-  dev->axes = (gpad_axe *) malloc((naxes) * sizeof(gpad_axe));
-  dev->buttons = (gpad_butn *) malloc((nbuttons) * sizeof(gpad_butn));
+  unsigned int statesz = (sizeof(gpad_axe) + sizeof(gpad_butn));
+
+  dev->state = malloc(sizeof(statesz));
+  dev->state->axe = (gpad_axe *) malloc(sizeof(gpad_axe));
+  dev->state->button = (gpad_butn *) malloc(sizeof(gpad_butn));
   dev->e = jse;
 
   dev->info->isconnected = true;
@@ -59,11 +70,14 @@ ginfo(gpad_t *dev)
 void 
 gkill(gpad_t *dev)
 {
-  if(dev != NULL) {
-    free(dev->axes);
-    free(dev->buttons);
+  if(!isnull(dev)) {
+    close(dev->info->fd);
+    
     free(dev->info->name);
     free(dev->info);
+    free(dev->state->axe);
+    free(dev->state->button);
+    free(dev->state);
     free(dev->e);
     free(dev);
   }
@@ -72,12 +86,12 @@ gkill(gpad_t *dev)
 void
 pinfo(gpad_t *dev)
 {
-    printf("(state: %s fd:%d id:%d) %s\n(path: %s)\n[axes: %u | buttons: %u]\n",
-	   dev->info->isconnected ? "CONNECTED":"DISCONNECTED",
-	   dev->info->fd,
-	   dev->info->id,
-	   dev->info->name,
-	   dev->info->path,
-	   dev->info->naxes,
-	   dev->info->nbuttons);
+  printf("(state: %s fd:%d id:%d) %s\n(path: %s)\n[axes: %u | buttons: %u]\n",
+	 dev->info->isconnected ? "CONNECTED":"DISCONNECTED",
+	 dev->info->fd,
+	 dev->info->id,
+	 dev->info->name,
+	 dev->info->path,
+	 dev->info->naxes,
+	 dev->info->nbuttons);
 }

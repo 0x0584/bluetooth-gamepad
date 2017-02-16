@@ -11,9 +11,12 @@ typedef enum ENUM_BOOL_TYPE {
   true  = !false
 } bool;
 
+#define isnull(x) (x == NULL ? true : false)
+
 typedef struct GAMEPAD gpad_t;
 typedef struct GAMEPAD_BUTTON gpad_butn;
 typedef struct GAMEPAD_AXE gpad_axe;
+typedef struct GAMEPAD_STICK gpad_stck;
 typedef struct GAMEPAD_INFO gpad_info;
   
 #endif	/* G_TYPES_H */

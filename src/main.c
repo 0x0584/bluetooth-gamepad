@@ -31,8 +31,6 @@
 #include "../include/host.h"
 #include "../include/gpad.h"
 
-#define isnull(x) x == NULL ? "TRUE" : "FALSE"
-
 int
 main(int argc, char **argv)
 {
@@ -49,14 +47,9 @@ main(int argc, char **argv)
   /*   printf("%s %s\n", root[i].addr, root[i].name); */
 
   gpad_t *g = ginit();
-  int rd;
-  
-  printf("\n[isnull:%s]\n",isnull(g));
+  /* printf("\n[isnull:%s]\n",isnull(g)); */
 
-  while((rd = read(g->info->fd, g->e, sizeof(struct js_event))))
-    if(rd != sizeof(struct js_event))
-      printf("no event is this");
-    else gevent(g->e);
+  gevent(g);
 
   gkill(g);
 

@@ -13,6 +13,9 @@ extern "C" {
   /* gamepad types */
 #include "../include/gtypes.h"
 
+  /* max # of supported devices */
+#define MAX_SUPPORTED (1<<4)
+  
   struct GAMEPAD_BUTTON {
     enum BUTTON_TYPE{
       UP = 0, DOWN, 
@@ -42,16 +45,17 @@ extern "C" {
       STCK_COUNT
     } side;
 
-    enum DIRECTION {
-      SDIREC_CENTER = 0,
-      SDIREC_LEFT,
-      SDIREC_RIGHT,
-      SDIREC_UP,
-      SDIREC_DOWN,
+    enum STICK_DIRECTION {
+      STCKDIREC_CENTER = 0,
+      STCKDIREC_LEFT,
+      STCKDIREC_RIGHT,
+      STCKDIREC_UP,
+      STCKDIREC_DOWN,
       
-      SD_COUNT
+      STCKDIREC_COUNT
     }direc;
   };
+
   struct GAMEPAD_INFO {
     unsigned short id,
       naxes, nbuttons;
@@ -63,16 +67,21 @@ extern "C" {
   
   extern struct GAMEPAD {
     gpad_info *info;
-    gpad_axe *axes;
-    gpad_butn *buttons;
 
+    struct GAMEPAD_STATE {
+      gpad_axe *axe;
+      gpad_butn *button;
+      gpad_stck *stick;
+    } *state;
+    
     struct js_event *e;
   } *master;
 
   gpad_t *ginit();
   gpad_t *ginfo(gpad_t *);
-  void gevent(struct js_event *jse);
   void gkill(gpad_t *);
+
+  void gevent(gpad_t *);
 
 #ifdef __cplusplus
 }
