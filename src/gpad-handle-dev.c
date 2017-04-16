@@ -1,38 +1,71 @@
-/*
- *  Copyright (C) 2017 Anas Rchid
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
- * Should you need to contact me, the author, you can do so either by
- * e-mail - mail your message to <rchid.anas@gmail.com>.
- */
+#include "../include/gpad.h"
 
-#include "../include/libgpad.h"
+void
+gevent(gpad_t *dev)
+{
+  if(isnull(dev)) goto FAIL;
 
+#if defined DEBUG
+  printf("type:%u\tvalue:%u\tnumber:%u\ttime%u\n",
+	 dev->e->type, dev->e->value, dev->e->number, dev->e->time);
+#endif
 
-bool isbutntriggered(gpad_t *dev, butn_t butn){
-  return (dev->behav->button->previous & butn.current) == 0 &&
-    (dev->behav->button->current & butn.current) != 0; 
-}
+  int rd;
+  int button;
 
-bool isbutndown(gpad_t *dev, butn_t butn) {
-  return (dev->behav->button->current & butn.current) != 0; 
-}
+  char *buttons[] = {"1", "2", "3", "4",
+		     "L1", "R1",
+		     "SELECT","START",
+		     "SP"
+		     "L2", "R2"};
+  
+  while((rd = read(dev->info->fd, dev->e, sizeof(struct js_event)))) {
+    if(rd != sizeof(struct js_event)) goto HERE;
+    
+    switch(dev->e->type){
+    case JS_EVENT_BUTTON: 
 
-bool isbutnrelzd(gpad_t *dev, butn_t butn) {
-  return (dev->behav->button->previous & butn.current) != 0 &&
-  (dev->behav->button->current & butn.current) == 0;
+      switch (dev->e->number) {
+      case 0: button = BUTTON_1; break;
+      case 1: button = BUTTON_2; break;
+      case 2: button = BUTTON_3; break;
+      case 3: button = BUTTON_4; break;
+	  
+      case 4: button = BUTTON_L1; break;
+      case 5: button = BUTTON_R1; break;
+	  
+      case 6: button = BUTTON_SELECT; break;
+      case 7: button = BUTTON_START; break;
+
+      case 8: button = 0; break; /* sp_button  */
+
+      case 9: button = BUTTON_L2; break;
+      case 10: button = BUTTON_R2; break;
+	  
+      default: button = 0; break;
+      }
+
+      /* set or unset the button */
+      if (dev->e->value) dev->state->button->current |= button;
+      else dev->state->button->current ^= button;
+					
+      printf("buttons pressed%s\n", buttons[button]);
+      break;
+
+    case JS_EVENT_AXIS: 
+      printf("axis pressed\n");
+      break;
+
+    default:
+      printf(".");
+      break;
+    }
+
+  HERE:
+    usleep(10000);
+    continue;
+  }
+
+ FAIL:
+  return;
 }

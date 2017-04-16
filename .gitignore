@@ -1,6 +1,7 @@
 *.org
 blue
 doc/
+*.0
 # Created by https://www.gitignore.io/api/c,linux,emacs
 
 ### C ###

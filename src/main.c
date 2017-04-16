@@ -1,6 +1,5 @@
-/*
- *  Copyright (C) 2017 Anas Rchid
- *
+/* Copyright (C) 2017 
+ *				         Anas Rchid <rchid.anas@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,27 +27,36 @@
  * this?? you are at the edge, be careful so that you don't fall..	*
  *									*
  * Cheers!								*
+ * CHECK!								*
  ************************************************************************
  */
 
-#include "../include/liblue.h"
+#include "../include/lib.h"
 #include "../include/remote.h"
 #include "../include/host.h"
+#include "../include/gpad.h"
 
 int
 main(int argc, char **argv)
 {
   /* struct remote *root = init_remote(); */
   
-  struct remote *root = NULL;
-  int i, responces;
+  /* struct remote *root = NULL; */
+  /* int i, responces; */
   
-  if(argc > 2) printf("%s %s", argv[0], argv[1]);
+  /* if(argc > 2) printf("%s %s", argv[0], argv[1]); */
 
-  root = (struct remote *) init_remote(&root, &responces);
+  /* root = (struct remote *) init_remote(&root, &responces); */
 
-  for(i = 0; i < responces; ++i)
-    printf("%s %s\n", root[i].addr, root[i].name);
+  /* for(i = 0; i < responces; ++i) */
+  /*   printf("%s %s\n", root[i].addr, root[i].name); */
+
+  gpad_t *g = ginit();
+  /* printf("\n[isnull:%s]\n",isnull(g)); */
+
+  gevent(g);
+
+  gkill(g);
 
   return EXIT_SUCCESS;
 }

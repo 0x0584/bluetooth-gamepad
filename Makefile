@@ -5,7 +5,7 @@
 CC = gcc
 RM = rm -f
 DRM = rm -fr
-EXEC = blue
+EXEC = bgp
 
 SRCDIR = src
 OBJDIR = bin
@@ -16,8 +16,9 @@ SRC := $(shell find $(SRCDIR) -name '*.c')
 OBJ := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 DEPS:= $(shell find $(DEPSDIR) -name '*.h')
 
-CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded 
-LDFLAGS = -I. -lbluetooth -lm
+CFLAGS = -ggdb -O2 -Wall -Wextra -pedantic -Wpadded \
+	-D DEBUG 
+LDFLAGS = -I. -lbluetooth
 
 # DEPS = remote.h host.h lib.h
 # OBJS = main.o remote.o host.o
@@ -46,6 +47,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $< $(LDFLAGS)
 
 remake: clean all
+run: remake
+	./$(EXEC) $(ARGS)
 clean:
 	@echo -e "\ncleaning up.."
 	$(RM) $(OBJ) $(EXEC)
